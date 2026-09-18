@@ -3,6 +3,8 @@
 
 This guide translates the UKPath product spec into a practical build plan: architecture, tech stack, data model, API surface, and a module-by-module implementation checklist for both the mobile app and the website.
 
+**This is one of several linked docs — see the [Documentation Index](README.md) for the full map.** Legal/regulatory sign-off items live in the [Compliance Guide](UKPath-Compliance-Guide.md) (a separate workstream that gates specific features, not a prerequisite to starting development). Technical security controls live in the [Security Guide](UKPath-Security-Guide.md). Environments, Docker, CI/CD, and CodeMagic mobile builds live in the [Deployment Guide](UKPath-Deployment-Guide.md). Platform test plans live in [Testing/](Testing/).
+
 ---
 
 ## 1. High-Level Architecture
@@ -189,15 +191,13 @@ Building the website in Next.js lets you capture organic search traffic (e.g. "S
 
 ---
 
-## 6. Security & Compliance Checklist
+## 6. Security & Compliance — See the Dedicated Guides
 
-- [ ] HTTPS/TLS everywhere, HSTS enabled
-- [ ] JWT with short expiry + refresh tokens
-- [ ] No storage of DOB, passport, address, or card data — enforce via schema design, not just policy
-- [ ] UK GDPR: privacy policy, cookie consent (website), data deletion endpoint
-- [ ] Rate-limit auth and service-request endpoints
-- [ ] Log affiliate redirects for revenue tracking, not user behavior profiling
-- [ ] Legal review before launch to confirm no FCA registration is triggered by Module E
+This section used to hold a mixed checklist of technical controls and legal requirements. It's now split so each is tracked by the people actually responsible for it:
+- **Technical controls** (TLS, JWT, rate-limiting, data handling, PCI scope) → [Security Guide](UKPath-Security-Guide.md)
+- **Legal/regulatory sign-off** (GDPR, FCA scope for Module E, data-source terms, ICO registration) → [Compliance Guide](UKPath-Compliance-Guide.md)
+
+No table stores DOB, passport, address, or card data — that's a schema-design rule enforced in Section 2 above, not just a policy note.
 
 ---
 
@@ -553,55 +553,11 @@ Running Google Places lookups on a schedule (rather than per-user) is exactly wh
 
 ---
 
-## 19. Legal Compliance Checklist for Every External Data Source
+## 19. Legal Compliance for External Data Sources — See the Compliance Guide
 
-You're right to flag this before building it — this is exactly the kind of thing that's cheap to get right at the design stage and expensive to fix after launch. I checked the actual current terms for each source rather than assuming. Here's where each one stands:
+The full legal detail for Google Places, TfL Open Data, National Rail (Darwin), and personal-data-on-individuals concerns now lives in the [Compliance Guide §2](UKPath-Compliance-Guide.md#2-external-data-source-compliance), so it's tracked alongside the other legal sign-offs rather than mixed into build notes here.
 
-### 19.1 Google Places API — restricted, not "publicly available to store"
-
-Google's Maps Platform Terms of Service are explicit: you may **not** export, extract, or scrape Google Maps content for use outside their services, and caching is prohibited **except** for two narrow exceptions:
-- `place_id` → can be stored indefinitely
-- Latitude/longitude → can be cached up to 30 consecutive days
-
-**Name, address, phone number, hours, rating, reviews, photos → no caching exception at all.** They must be requested live, every time you display them, directly from Google's API — not written into your own database, not "refreshed daily," not stored even briefly beyond a single request/response cycle.
-
-**What this means for your build:**
-- [ ] Store only the `place_id` in your `listings` table (this is what your app can legally keep long-term)
-- [ ] Call Google Places **live, at the moment a user views that listing**, to fetch the current name/phone/hours/rating — display it, don't save it
-- [ ] Your "refresh job" from Section 17 is legally fine to run daily against Google **for the purpose of checking whether a place_id is still valid** (e.g. confirming it hasn't closed), but it can't be the mechanism that populates what users actually see — that has to be a live call
-- [ ] If you want a genuinely storable, cacheable restaurant/grocery directory (which is what your daily-refresh idea actually needs to work well), look at providers built on **OpenStreetMap data with permissive storage terms** — Geoapify and LocationIQ both explicitly allow caching, storing, and redistributing results, unlike Google. This is worth strongly considering for exactly the use case you described.
-- [ ] Every screen showing Google Places data needs the Google logo/attribution per their display guidelines — this is a hard requirement, not optional styling
-
-### 19.2 TfL Open Data — genuinely open, registration required
-
-TfL explicitly encourages third-party apps to use their open data for building their own software and services, including presenting travel information in innovative ways — commercial use included. But it's not a free-for-all scrape:
-- [ ] You must register for an API key and accept TfL's specific Open Data terms and conditions before use — not optional, and TfL states plainly that if you don't agree to the terms, you must not use the data
-- [ ] Attribution to TfL is required per their brand guidelines
-- [ ] This is a proper API integration (Section 11-style), not scraping their website — use their Unified API, not their public pages
-
-### 19.3 National Rail (Darwin feed) — free and open for your scale, with a cap
-
-National Rail's Darwin real-time data moved to an open licence in 2014specifically so developers could build apps and tools with it, including commercial ones, without the previous licensing fees. The practical details:
-- [ ] Registration required (a T&Cs acceptance, not a payment, at your scale)
-- [ ] Free until a commercial app crosses roughly 5 million requests in a 4-week period — well beyond your 10K–1 lakh user range for the foreseeable future, so this is a non-issue at your stage but worth knowing about as you scale
-- [ ] Use the official Darwin Webservice/Push Port feeds, not scraped National Rail Enquiries web pages
-
-### 19.4 The general rule: APIs with published terms are fine; scraping web pages is not
-
-This is the actual dividing line, and it's worth stating explicitly to your developer:
-- **"Publicly visible" is not the same as "legally reusable."** A restaurant's phone number showing on a Google search result page doesn't mean you're free to scrape that page and store it — Google's terms govern that data regardless of where you encountered it, and scraping their pages directly (rather than using their API) is a clearer terms-of-service violation, and in the UK can also raise Computer Misuse Act 1990 concerns if it involves bypassing technical access controls.
-- **Using an official API within its published terms is the safe path.** Every data source in this guide (Google Maps Platform, TfL, National Rail) has one — use it, respect its specific caching/storage rules, and you're on solid ground.
-- **For data with no compliant API** (e.g. a specific restaurant's live availability that only exists on their own website), the legally clean approach is a direct partnership or a manually-maintained listing your team updates — not an automated scraper.
-
-### 19.5 One more category worth flagging: personal data on drivers/individuals
-
-If "cab drivers' information" means individual driver names/numbers rather than a taxi company's public business line, that's personal data under UK GDPR, and storing/displaying it needs its own lawful basis and the individual's awareness — this is different from a business's published contact number. For the app's actual use case, you almost certainly want **company-level taxi/private-hire firm listings** (already public business information) rather than individual driver data, which sidesteps this issue entirely.
-
-### 19.6 Before launch
-
-- [ ] Get a UK-qualified solicitor (even a short paid consultation) to review your final data-sourcing approach once it's built — this guide gets you to "architected correctly," not to "legally signed off"
-- [ ] Keep a `data_source` and licence-reference column (as already in Section 17.3) on every table so you can prove, source by source, what terms governed each piece of data if ever asked
-- [ ] Publish your own Terms of Use and Privacy Policy referencing Google's terms, as Google's Places policy itself requires of any app displaying their data
+**The one architectural rule that stays here, because it's a build decision, not a legal one:** store only `place_id` from Google Places long-term; call Google Places **live, at the moment a user views a listing**, for name/phone/hours/rating — never cache that content in your own database, per Google's Maps Platform Terms of Service. The daily refresh job (Section 17) is fine for checking a `place_id` is still valid; it must not be what populates what users see for that data.
 
 ---
 
@@ -823,65 +779,19 @@ ALTER TABLE listings ADD COLUMN minimum_order_value DECIMAL;
 ALTER TABLE listings ADD COLUMN typical_delivery_speed VARCHAR;  -- 'next-day', 'up to 5 days', etc.
 ```
 
-### 28.4 Important: this makes UKPath a food business, not just a directory app
+### 28.4 Legal obligations this feature triggers — see the Compliance Guide
 
-This is worth being direct about, because it changes your legal obligations in a real way compared to everything else in this guide so far (which was consult-only/directory/affiliate — no handling of physical goods). Once UKPath packs and ships food itself:
-- [ ] **Food business registration** with your local council is a legal requirement in the UK, at least 28 days before you start trading — this applies even to a small packing operation
-- [ ] **Allergen information** must be clearly provided for every item sold — this is a legal requirement (Food Information Regulations), not optional labelling
-- [ ] You'll need an actual **courier account** (Royal Mail Click & Drop, DPD, Evri Business, etc.) — the fare bands in Section 28.1 should reflect your real negotiated rates once you have one, not just published retail rates
-- [ ] Basic **food hygiene practices** for whoever is doing the packing (a Level 2 Food Hygiene certificate is the common baseline, even for packing rather than cooking)
-- [ ] This is a good candidate for the same "get it checked before launch" step as Section 19.6 — a UK food business registration is genuinely quick and cheap to sort out properly, and far cheaper to do before you start selling than after
+Once UKPath packs and ships food itself, it becomes a food business with real legal obligations (council registration, allergen labelling, courier account, food hygiene certification) that don't apply to the rest of this guide's consult-only/directory/affiliate modules. Full detail: [Compliance Guide §3](UKPath-Compliance-Guide.md#3-food-business-compliance-sections-2830-of-the-developer-guide).
 
 ---
 
-## 29. Code-Enforced Compliance Gate (Not Just a Checklist)
+## 29. Code-Enforced Compliance Gate — Architecture Summary
 
-Everything in Sections 19, 21, and 28.4 has been checklist-style so far — good for planning, but a checklist can quietly get skipped under launch pressure. Here's the fix you asked for: make legal sign-off a **hard gate in the code itself**, so the feature literally cannot go live until someone has actually flipped it.
+Legal sign-off must be a **hard gate in the code itself**, not just a checklist that can quietly get skipped under launch pressure. The full `compliance_approvals` schema, seed list, and code pattern now live in the [Compliance Guide](UKPath-Compliance-Guide.md#code-enforced-compliance-gate) — this is the one piece of "legal" content that's also an architecture decision, so it's worth knowing it exists from the developer side too:
 
-### 29.1 A `compliance_approvals` config table
-
-```sql
-compliance_approvals
-  id UUID PRIMARY KEY
-  approval_key VARCHAR UNIQUE   -- 'food_business_registered', 'courier_licence_confirmed', etc.
-  is_approved BOOLEAN DEFAULT false
-  approved_by VARCHAR           -- name of the person who signed off, not a developer
-  approved_at TIMESTAMP
-  evidence_note TEXT            -- e.g. "council reg number 12345, confirmed via email 12/03"
-```
-
-Seed it with every approval this guide has flagged, all defaulted to `false`:
-- `food_business_registered` (Section 28.4)
-- `allergen_labelling_reviewed` (Section 28.4)
-- `courier_account_active` (Section 28.4)
-- `food_hygiene_cert_obtained` (Section 28.4)
-- `solicitor_data_review_complete` (Section 19.6)
-- `emergency_numbers_human_verified` (Section 11's warning that this category should never be automated)
-
-### 29.2 The actual code-level gate
-
-```javascript
-// Server-side check, not a UI-only warning — this must block the API endpoint itself
-async function canEnableGroceryCheckout() {
-  const required = ['food_business_registered', 'allergen_labelling_reviewed', 'courier_account_active', 'food_hygiene_cert_obtained'];
-  const approvals = await db.compliance_approvals.findAll({ where: { approval_key: required } });
-  return required.every(key => approvals.find(a => a.approval_key === key)?.is_approved === true);
-}
-
-// In the checkout route itself:
-app.post('/grocery-checkout', async (req, res) => {
-  if (!(await canEnableGroceryCheckout())) {
-    return res.status(503).json({ error: 'This feature is not yet available.' });
-    // NOTE TO DEVELOPER: do not bypass this check or hardcode it to true.
-    // It only becomes true when compliance_approvals rows are updated by
-    // someone with actual authority to confirm council/legal sign-off —
-    // not by a developer during testing.
-  }
-  // ... proceed with order
-});
-```
-
-**The point of building it this way**: a developer testing locally, or a future team member unfamiliar with the legal background, cannot accidentally ship the grocery-checkout feature to production — it's structurally blocked until the actual approvals exist as rows in the database, entered by someone who did the real-world registration, not by anyone editing code. This is a small amount of extra work that removes a real risk.
+- A `compliance_approvals` table holds one row per legal requirement, defaulted to `is_approved: false`
+- Every checkout/payment endpoint checks the relevant keys **server-side** before proceeding — via the `compliance` module's exported `isApproved()` function (see Section 34's module structure), never a UI-only warning
+- Only a person with real authority flips a row to `true` — never a developer, and never hardcoded
 
 ---
 
@@ -922,7 +832,7 @@ shopper_orders
 
 ### 30.4 This adds a new compliance flag, not a replacement for Section 28's
 
-Add to the `compliance_approvals` table from Section 29: `personal_shopper_payment_model_reviewed` — even though this model is generally simpler to license than Section 28's, it should go through the same sign-off gate before its checkout endpoint goes live, for the same reason: a real person with authority confirms it, not a developer assuming it's fine.
+This model is generally simpler to license than Section 28's (no food-business registration needed), but its payment structure still needs its own sign-off before its checkout endpoint goes live — see [Compliance Guide §3](UKPath-Compliance-Guide.md#3-food-business-compliance-sections-2830-of-the-developer-guide) for the `personal_shopper_payment_model_reviewed` requirement.
 
 ---
 
@@ -965,9 +875,9 @@ Section 31 so far only covers taking money *from* the customer. Section 30's per
 
 Your monetisation plan already includes a premium subscription (offline guides, priority support). Stripe's separate **Billing** product handles recurring charges, proration, and cancellation — don't try to build recurring billing logic by hand on top of one-off Checkout; it's a different, purpose-built API (`stripe.subscriptions`) that plugs into the same account.
 
-### 31.6 One compliance note specific to card payments: Strong Customer Authentication
+### 31.6 Strong Customer Authentication — see the Security Guide
 
-UK card payments are legally required to use **Strong Customer Authentication (SCA)** — the "verify with your bank app" or SMS-code step you've likely seen on other sites — for most online card transactions. Stripe Checkout and Stripe Elements handle this automatically as part of the standard flow, so this isn't extra work for your developer, but it's worth knowing it's a legal requirement (under the UK's Payment Services Regulations), not just a Stripe design choice — don't let anyone "simplify" the checkout by trying to bypass it.
+UK card payments legally require Strong Customer Authentication (SCA) for most online transactions. Stripe Checkout/Elements handle this automatically — see [Security Guide §4](UKPath-Security-Guide.md#4-payments-technical-side) for the technical control, and don't let anyone "simplify" the checkout by bypassing it.
 
 ### 31.7 A genuinely cheaper option worth adding: Pay by Bank (Open Banking)
 
@@ -982,56 +892,17 @@ Fair pushback — and there is a real, current answer to it, not just "card fees
 
 ---
 
-## 32. Stripe's Business Account Prerequisite — What's Actually Required
+## 32. Stripe's Business Account Prerequisite — See the Compliance Guide
 
-Going with Stripe means going through their UK "Know Your Business" (KYB) verification before any money can move — this isn't optional paperwork, Stripe will restrict payouts until it's done. I checked their current UK requirements directly, here's the real list:
+Going with Stripe means going through their UK "Know Your Business" (KYB) verification before any money can move. The full requirements list (Companies House registration, business bank account, director/UBO identity verification) and the `stripe_business_kyb_verified` gate now live in [Compliance Guide §4](UKPath-Compliance-Guide.md#4-payments-compliance).
 
-**What you need before starting Stripe onboarding:**
-- [ ] **Companies House registration** — your business needs to actually be an incorporated UK company (or registered sole trader/partnership) with a Company Registration Number (CRN) first; Stripe checks this directly against Companies House
-- [ ] **Registered business address** — a real address, not a PO box
-- [ ] **UK business bank account** — sort code and account number, in the business's name (this is where payouts land)
-- [ ] **Director/owner identity verification** — a valid passport or national ID for whoever is the legal representative/director, plus proof of address
-- [ ] **Ultimate Beneficial Owner (UBO) details** — anyone owning more than 25% of the business needs to be declared and verified too
-- [ ] **Business details**: phone number, email, website, and — if you're a limited company or sole trader — a tax document with your Unique Taxpayer Reference (UTR)
-- [ ] **For Stripe Connect specifically** (needed for Section 31.4's courier payouts): each connected courier also goes through their own lighter-weight identity verification before Stripe will pay them out
-
-**The dependency chain, stated plainly**: you can't get the UK business bank account and Companies House registration *for* Stripe until the company itself is properly incorporated — so this sits downstream of the same business-formation step that Sections 28.4 and 30 already required for food/courier registration. Get the company incorporated first; Stripe, the food registration, and the courier account can all then proceed from that same foundation.
-
-### 32.1 Add this as its own compliance gate
-
-Extend the `compliance_approvals` table from Section 29 with: `stripe_business_kyb_verified` — defaulted to `false`, same rule as everything else — the payment checkout code should check this flag exactly like Section 29.2's example, so no developer can accidentally point a checkout flow at a Stripe account that hasn't actually cleared verification.
+**The dependency chain worth knowing as a developer**: the company must be incorporated and have a business bank account *before* Stripe onboarding can complete — so a checkout feature genuinely cannot go live until that foundational business-formation step is done, regardless of how complete the code is.
 
 ---
 
-## 33. Master Prerequisites & Documents Checklist (Everything We've Discussed, in One Place)
+## 33. Master Prerequisites Checklist — Now the Compliance Guide
 
-You're right that this has gotten large — this section exists specifically to answer "closely, what are the legalities for each different section" without making someone hunt through 32 sections. Every row below feeds into the same `compliance_approvals` table from Section 29, so this table **is** the seed data for that table.
-
-| # | Requirement | Why (which section) | What's actually needed | `compliance_approvals` key |
-|---|---|---|---|---|
-| 1 | UK company incorporation | Foundation for everything below | Companies House registration, CRN | `company_incorporated` |
-| 2 | UK business bank account | Stripe payouts, general trading | Sort code + account number in company name | `business_bank_account_active` |
-| 3 | Stripe KYB verification | Section 32 | Director ID, UBO details, tax reference | `stripe_business_kyb_verified` |
-| 4 | Food business registration | Section 28.4 | Local council registration, ≥28 days before trading | `food_business_registered` |
-| 5 | Allergen labelling review | Section 28.4 | Per-item allergen info matching Food Information Regulations | `allergen_labelling_reviewed` |
-| 6 | Food hygiene certification | Section 28.4 | Level 2 Food Hygiene cert for packing staff | `food_hygiene_cert_obtained` |
-| 7 | Courier/delivery account | Section 28 | Business account with Royal Mail/DPD/Evri etc. | `courier_account_active` |
-| 8 | Personal-shopper payment model review | Section 30.2 | Legal confirmation this isn't e-money/FCA-regulated | `personal_shopper_payment_model_reviewed` |
-| 9 | TfL Open Data registration | Section 19.2 | API key, T&Cs acceptance | `tfl_open_data_registered` |
-| 10 | National Rail Darwin registration | Section 19.3 | Developer T&Cs acceptance | `national_rail_registered` |
-| 11 | Google Maps Platform account | Section 12 | Billing account, API key | `google_maps_account_active` |
-| 12 | ICO registration (data protection fee) | New — see 33.1 below | Annual fee paid, registration number | `ico_registered` |
-| 13 | Privacy Policy & Terms of Use published | Section 19.6 | Legal document referencing every third-party data source's terms | `privacy_policy_published` |
-| 14 | Solicitor review of data-sourcing approach | Section 19.6 | Sign-off from a UK-qualified solicitor | `solicitor_data_review_complete` |
-| 15 | Emergency numbers human-verified | Section 11 | Manual review, never automated | `emergency_numbers_human_verified` |
-
-### 33.1 One requirement not yet covered: ICO registration
-
-Worth adding since you asked me to check closely: most UK businesses that process personal data — which UKPath does the moment it has user accounts, delivery addresses, and order history — are legally required to **register with the Information Commissioner's Office (ICO)** and pay the annual data protection fee (a tiered fee based on company size, typically a modest amount for a small business), unless a specific exemption applies. This is separate from GDPR compliance itself (which Section 7 already covers) — it's a distinct registration/fee obligation. Add it to the list above and get it confirmed as part of the same solicitor review in row 14.
-
-### 33.2 How to keep this from becoming unmanageable as the guide grows
-
-Fair warning taken — this file is genuinely large now. The practical fix, when you're ready for it: **split this single document into a `docs/` folder that mirrors the module structure in Section 34 below** — one file per module (`payments.md`, `transport.md`, `grocery.md`, `compliance.md`, etc.) — with this file becoming a short index that links to each. I can do that restructuring whenever you want it; for now everything stays in one place so nothing gets lost while the plan is still taking shape.
+The full master checklist (every legal requirement across the whole build, mapped to its `compliance_approvals` key) now lives in the [Compliance Guide's master table](UKPath-Compliance-Guide.md#master-checklist-seed-data-for-the-table-above), maintained as its own document rather than a section here — see the [Documentation Index](README.md) for the full doc map this guide is now split across.
 
 ---
 
