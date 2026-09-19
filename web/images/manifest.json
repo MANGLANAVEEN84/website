@@ -1,0 +1,23 @@
+{
+  "before": {
+    "taj": "taj.jpg"
+  },
+  "getting": {
+    "hero": "london-bus.jpg",
+    "train": "london.jpg",
+    "coach": "national-express.jpg",
+    "taxi": "london-bus.jpg"
+  },
+  "living": {
+    "groceries_main": "groceries-indian.jpg",
+    "groceries_secondary": "groceries.jpg",
+    "money": "british-money.jpg",
+    "sim": "uk-sim.jpg",
+    "food": "indian-food.jpg"
+  },
+  "help": {
+    "emergency": "emergency2.jpg",
+    "passport": "emergency.jpg",
+    "icon": "help.svg"
+  }
+}

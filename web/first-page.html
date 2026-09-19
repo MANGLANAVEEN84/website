@@ -62,16 +62,16 @@
           </div>
             <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a class="step-tile" href="before-you-land.html"><img src="images/taj.jpg" alt="Taj Mahal"/><div><div class="font-semibold">Before you land</div><div class="text-sm text-slate-500">Order groceries to your hotel.</div></div></a>
-              <a class="step-tile" href="getting-here.html"><img src="images/london.jpg" alt="London skyline"/><div><div class="font-semibold">Getting here</div><div class="text-sm text-slate-500">Routes, fares, and time.</div></div></a>
-              <a class="step-tile" href="living-here.html"><img src="images/groceries.jpg" alt="groceries"/><div><div class="font-semibold">Living here</div><div class="text-sm text-slate-500">SIM, money, and tips.</div></div></a>
-              <a class="step-tile" href="if-something-wrong.html"><img src="images/emergency.jpg" alt="emergency"/><div><div class="font-semibold">If something's wrong</div><div class="text-sm text-slate-500">Emergency contacts and help.</div></div></a>
+                <a class="step-tile" href="getting-here.html"><img src="images/national-express.jpg" alt="National Express bus"/><div><div class="font-semibold">Getting here</div><div class="text-sm text-slate-500">National Express, trains, taxis — routes, fares, and time.</div></div></a>
+                <a class="step-tile" href="living-here.html"><img src="images/groceries-indian.jpg" alt="groceries"/><div><div class="font-semibold">Living here</div><div class="text-sm text-slate-500">SIM, money, and tips.</div></div></a>
+                <a class="step-tile" href="if-something-wrong.html"><img src="images/emergency2.jpg" alt="emergency"/><div><div class="font-semibold">If something's wrong</div><div class="text-sm text-slate-500">Emergency contacts and help.</div></div></a>
             </div>
         </div>
 
       </div>
 
       <div class="relative rounded-xl overflow-hidden shadow-xl">
-          <img id="bgImg" src="images/london.jpg" alt="visual" class="w-full h-full object-cover" />
+        <img id="bgImg" data-img="getting.hero" src="images/london-bus.jpg" alt="London bus" class="w-full h-full object-cover" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
         <div class="absolute bottom-6 left-6 text-white">
           <div class="text-2xl font-bold">India → UK</div>
@@ -160,5 +160,6 @@
     const panel = document.querySelector('.panel');
     if(panel) panel.appendChild(link);
   </script>
+  <script src="images/manifest-loader.js"></script>
 </body>
 </html>
