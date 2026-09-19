@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UKPath — Test: Flight animation</title>
+  <style>
+    html,body{height:100%;margin:0}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:#000}
+    .stage{position:relative;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff}
+    .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 1s ease;filter:brightness(0.8)}
+    .bg.hidden{opacity:0}
+    .caption{position:relative;z-index:30;text-align:center;font-weight:700;font-size:28px;text-shadow:0 4px 20px rgba(0,0,0,0.6)}
+    .plane{position:absolute;z-index:40;left:-10%;top:55%;width:80px;height:80px;transform-origin:center}
+    @keyframes fly {0%{transform:translateX(-120%) translateY(0) rotate(-10deg)}50%{transform:translateX(50vw) translateY(-18vh) rotate(10deg)}100%{transform:translateX(120vw) translateY(-30vh) rotate(20deg)}}
+    .plane.fly{animation:fly 3s cubic-bezier(.2,.8,.2,1) forwards}
+    .hint{position:absolute;bottom:24px;width:100%;text-align:center;color:rgba(255,255,255,0.8);z-index:50}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div id="bgIndia" class="bg" style="background-image:url('images/india.svg')"></div>
+    <div id="bgLondon" class="bg hidden" style="background-image:url('images/london.svg')"></div>
+
+    <div class="caption" id="caption">From India</div>
+
+    <!-- plane SVG -->
+    <div id="plane" class="plane" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 12l20-7-7 20-3-8-10-5z" fill="#fff" opacity="0.95"></path>
+      </svg>
+    </div>
+
+    <div class="hint">This is a preview: background swaps from India → flight → London. Replace `images/*.svg` with photos.</div>
+  </div>
+
+  <script>
+    const plane = document.getElementById('plane');
+    const bgIndia = document.getElementById('bgIndia');
+    const bgLondon = document.getElementById('bgLondon');
+    const caption = document.getElementById('caption');
+
+    function startSequence(){
+      // initial state: India shown
+      caption.textContent = 'Starting: India';
+      setTimeout(()=>{
+        // trigger flight
+        caption.textContent = 'Flight: UK-bound';
+        plane.classList.add('fly');
+        setTimeout(()=>{
+          // after flight, show London
+          plane.classList.remove('fly');
+          bgIndia.classList.add('hidden');
+          bgLondon.classList.remove('hidden');
+          caption.textContent = 'Arrived: London';
+        }, 3000);
+      }, 1500);
+    }
+
+    // loop every 8s so you can see it repeat
+    startSequence();
+    setInterval(()=>{startSequence();}, 8000);
+  </script>
+</body>
+</html>
