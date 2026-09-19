@@ -4,92 +4,74 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>UKPath — Landing (Client-side demo)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--bg:#081024;--card:#0f1724;--muted:#9aa4b2;--accent:#06b6d4}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:#e6eef6}
-    header{padding:18px 24px;display:flex;align-items:center;gap:18px}
-    .logo{font-weight:700;font-size:18px}
-    .container{display:grid;grid-template-columns:360px 1fr;gap:20px;padding:20px}
-    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:16px}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:var(--accent);color:#042029;border:none;cursor:pointer}
-    .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px}
-    .card h4{margin:0 0 4px 0}
-    .meta{font-size:13px;color:var(--muted)}
-    .large{font-size:20px;font-weight:700}
-    .controls-row{display:flex;gap:8px;align-items:center;margin-top:12px}
-    .bg-stage{position:fixed;inset:0;z-index:0;overflow:hidden;opacity:0.12;pointer-events:none}
-    .bg-stage img{width:100%;height:100%;object-fit:cover}
-    main{position:relative;z-index:10}
-    .note{font-size:13px;color:var(--muted);margin-top:8px}
-    .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
+    /* small custom tweaks to compliment Tailwind */
+    .bg-stage{position:fixed;inset:0;z-index:0;overflow:hidden;opacity:0.18;pointer-events:none}
+    .bg-stage img{width:100%;height:100%;object-fit:cover;filter:grayscale(10%) brightness(0.9)}
+    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
   </style>
 </head>
 <body>
-  <div class="bg-stage" id="bgStage">
-    <img id="bgImg" src="images/india.svg" alt="background"/>
-  </div>
+  
   <header>
     <div class="logo">UKPath — Demo</div>
     <div style="margin-left:auto" class="pill">Client-only preview</div>
   </header>
 
-  <main class="container">
-    <aside>
-      <div class="panel">
+  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+      <div class="flex flex-col justify-center">
+        <div class="panel p-8 rounded-xl shadow-lg">
         <div style="font-weight:700;margin-bottom:8px">Plan your trip</div>
-        <div>
-          <label>From</label>
-          <select id="inputFrom">
-            <option>India (DEL)</option>
-            <option>India (BOM)</option>
-            <option>India (HYD)</option>
-          </select>
-        </div>
-        <div style="margin-top:10px">
-          <label>To</label>
-          <select id="inputTo">
-            <option>London (LHR)</option>
-            <option>London (LGW)</option>
-            <option>Manchester (MAN)</option>
-          </select>
-        </div>
-        <div style="margin-top:10px">
-          <label>Departure</label>
-          <input id="inputDate" type="date" />
-        </div>
-        <div style="margin-top:10px">
-          <label>Passengers</label>
-          <input id="inputPax" type="number" min="1" value="1" />
-        </div>
-
-        <div class="controls-row">
-          <button class="btn" id="btnSearch">Search flights</button>
-          <button class="btn" id="btnToggleBg" style="background:#fff;color:#042029">Toggle BG</button>
-        </div>
-
-        <div class="note">No backend required — results are mocked client-side so you can test look & feel.</div>
-      </div>
-    </aside>
-
-    <section>
-      <div class="panel">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-size:18px;font-weight:700">Available flights</div>
-            <div class="meta" id="searchMeta">Choose options and click <strong>Search flights</strong>.</div>
+          <div class="mt-4 text-slate-300">Choose options and preview mock results in the browser — no backend needed.</div>
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="block text-sm text-slate-400">From
+              <select id="inputFrom" class="mt-2 w-full rounded-md bg-slate-900 text-white p-2">
+                <option>India (DEL)</option>
+                <option>India (BOM)</option>
+                <option>India (HYD)</option>
+              </select>
+            </label>
+            <label class="block text-sm text-slate-400">To
+              <select id="inputTo" class="mt-2 w-full rounded-md bg-slate-900 text-white p-2">
+                <option>London (LHR)</option>
+                <option>London (LGW)</option>
+                <option>Manchester (MAN)</option>
+              </select>
+            </label>
           </div>
-          <div class="pill" id="summaryPill">Ready</div>
+
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="block text-sm text-slate-400">Departure
+              <input id="inputDate" type="date" class="mt-2 w-full rounded-md bg-slate-900 text-white p-2" />
+            </label>
+            <label class="block text-sm text-slate-400">Passengers
+              <input id="inputPax" type="number" min="1" value="1" class="mt-2 w-full rounded-md bg-slate-900 text-white p-2" />
+            </label>
+          </div>
+
+          <div class="mt-6 flex gap-3">
+            <button class="btn p-3 rounded-xl" id="btnSearch">Search flights</button>
+            <button class="btn p-3 rounded-xl bg-white text-slate-900" id="btnToggleBg">Toggle BG</button>
+          </div>
+
+          <div class="mt-6">
+            <div id="resultsArea" class="space-y-3 text-slate-300">No results yet — try a search.</div>
+          </div>
         </div>
 
-        <div style="margin-top:12px" id="resultsArea">
-          <div class="meta">No results yet — try a search.</div>
+      </div>
+
+      <div class="relative rounded-xl overflow-hidden shadow-xl">
+        <img id="bgImg" src="images/india.svg" alt="visual" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+        <div class="absolute bottom-6 left-6 text-white">
+          <div class="text-2xl font-bold">India → UK</div>
+          <div class="text-sm opacity-80">Helpful, clear steps for first-time visitors</div>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
   <script>
@@ -97,8 +79,6 @@
     const btnToggleBg = document.getElementById('btnToggleBg');
     const btnSearch = document.getElementById('btnSearch');
     const resultsArea = document.getElementById('resultsArea');
-    const summaryPill = document.getElementById('summaryPill');
-    const searchMeta = document.getElementById('searchMeta');
 
     let bgState = 0; // 0=india,1=london
 
@@ -127,9 +107,7 @@
     }
 
     function renderResults(list){
-      if(!list || list.length===0){ resultsArea.innerHTML = '<div class="meta">No flights found</div>'; return }
-      summaryPill.textContent = list.length + ' results';
-      searchMeta.textContent = 'Showing mock results — interactive only.';
+      if(!list || list.length===0){ resultsArea.innerHTML = '<div class="text-slate-400">No flights found</div>'; return }
       const html = ['<div class="results">'];
       for(const f of list){
         html.push(`<div class="card">`);
@@ -168,11 +146,12 @@
       bgState = 1; bgImg.src = 'images/london.svg';
     });
 
-    // small demo: show test-page animation link in-page
+    // small demo: show test-page animation link in the main panel
     const link = document.createElement('div');
-    link.className = 'note';
-    link.innerHTML = 'Preview animation: <a href="test-page.html" style="color:var(--accent)">test-page.html</a>';
-    document.querySelector('aside .panel').appendChild(link);
+    link.className = 'mt-4 text-sm text-slate-400';
+    link.innerHTML = 'Preview animation: <a href="test-page.html" class="text-white underline">test-page.html</a>';
+    const panel = document.querySelector('.panel');
+    if(panel) panel.appendChild(link);
   </script>
 </body>
 </html>
