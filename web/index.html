@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>UKPath — Demo Site</title>
   <style>
-    :root{--bg:#071124;--card:#0f1724;--muted:#9aa4b2;--accent:#06b6d4}
+    :root{--bg:#f8fafc;--card:#ffffff;--muted:#6b7280;--accent:#0ea5b7}
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;background:linear-gradient(180deg,#071124,#041224);color:#e6eef6}
+    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:#0f172a}
     .wrap{max-width:1100px;margin:40px auto;padding:24px}
     header{display:flex;align-items:center;gap:16px}
     .brand{font-weight:800;font-size:20px}
@@ -15,14 +15,16 @@
     .hero{display:flex;gap:24px;align-items:center;margin-top:28px}
     .hero-left{flex:0 0 480px}
     .hero-right{flex:1}
-    .card{background:rgba(255,255,255,0.02);padding:18px;border-radius:12px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,0.06)}
     .btn{display:inline-block;padding:12px 16px;border-radius:10px;background:var(--accent);color:#012; text-decoration:none;font-weight:700}
     .muted{color:var(--muted)}
     nav{margin-top:18px;display:flex;gap:10px}
     footer{margin-top:38px;color:var(--muted);font-size:13px}
     .features{display:flex;gap:12px;margin-top:14px}
-    .feature{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;flex:1}
+    .feature{background:linear-gradient(180deg,#fff,#f8fafc);padding:12px;border-radius:8px;flex:1}
     a.small{color:var(--accent);text-decoration:none}
+    .step-card{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#f7f9fb);box-shadow:0 6px 18px rgba(15,23,42,0.04)}
+    .step-card img{width:64px;height:64px;border-radius:8px}
   </style>
 </head>
 <body>
@@ -41,10 +43,10 @@
             <div style="margin-top:12px">
               <h2 style="margin:8px 0">Your journey in 4 steps</h2>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-                <a class="card" href="before-you-land.html"><div style="font-size:20px">✈️ Before you land</div><div class="muted">Order Indian groceries delivered to your hotel. No heavy luggage needed.</div></a>
-                <a class="card" href="getting-here.html"><div style="font-size:20px">🚌 Getting here</div><div class="muted">Train, bus, or taxi? We show you routes, fares, and how long it takes.</div></a>
-                <a class="card" href="living-here.html"><div style="font-size:20px">📱 Living here</div><div class="muted">Find food, activate a SIM, understand money, and get help anytime.</div></a>
-                <a class="card" href="if-something-wrong.html"><div style="font-size:20px">🆘 If something's wrong</div><div class="muted">Lost passport? Need NHS? Emergency contacts just one tap away.</div></a>
+                <a class="step-card" href="before-you-land.html"><img src="images/plane.svg" alt="plane" /><div><div style="font-size:18px;font-weight:700">Before you land</div><div class="muted">Order Indian groceries delivered to your hotel. No heavy luggage needed.</div></div></a>
+                <a class="step-card" href="getting-here.html"><img src="images/bus.svg" alt="bus" /><div><div style="font-size:18px;font-weight:700">Getting here</div><div class="muted">Train, bus, or taxi? We show you routes, fares, and how long it takes.</div></div></a>
+                <a class="step-card" href="living-here.html"><img src="images/sim.svg" alt="sim" /><div><div style="font-size:18px;font-weight:700">Living here</div><div class="muted">Find food, activate a SIM, understand money, and get help anytime.</div></div></a>
+                <a class="step-card" href="if-something-wrong.html"><img src="images/help.svg" alt="help" /><div><div style="font-size:18px;font-weight:700">If something's wrong</div><div class="muted">Lost passport? Need NHS? Emergency contacts just one tap away.</div></div></a>
               </div>
             </div>
           </div>

@@ -6,10 +6,11 @@
   <title>UKPath — Landing (Client-side demo)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* small custom tweaks to compliment Tailwind */
-    .bg-stage{position:fixed;inset:0;z-index:0;overflow:hidden;opacity:0.18;pointer-events:none}
-    .bg-stage img{width:100%;height:100%;object-fit:cover;filter:grayscale(10%) brightness(0.9)}
-    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    /* lighter hero tweaks */
+    body{background:linear-gradient(180deg,#f8fafc,#eef2ff)}
+    .panel{background:#ffffff}
+    .step-tile{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,0.04)}
+    .step-tile img{width:56px;height:56px}
   </style>
 </head>
 <body>
@@ -26,7 +27,7 @@
         <div style="font-weight:700;margin-bottom:8px">Plan your trip</div>
           <div class="mt-4 text-slate-300">Choose options and preview mock results in the browser — no backend needed.</div>
           <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="block text-sm text-slate-400">From
+            <label class="block text-sm text-slate-500">From
               <select id="inputFrom" class="mt-2 w-full rounded-md bg-slate-900 text-white p-2">
                 <option>India (DEL)</option>
                 <option>India (BOM)</option>
@@ -57,7 +58,13 @@
           </div>
 
           <div class="mt-6">
-            <div id="resultsArea" class="space-y-3 text-slate-300">No results yet — try a search.</div>
+            <div id="resultsArea" class="space-y-3 text-slate-600">No results yet — try a search.</div>
+          </div>
+          <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <a class="step-tile" href="before-you-land.html"><img src="images/plane.svg" alt="plane"/><div><div class="font-semibold">Before you land</div><div class="text-sm text-slate-500">Order groceries to your hotel.</div></div></a>
+            <a class="step-tile" href="getting-here.html"><img src="images/bus.svg" alt="bus"/><div><div class="font-semibold">Getting here</div><div class="text-sm text-slate-500">Routes, fares, and time.</div></div></a>
+            <a class="step-tile" href="living-here.html"><img src="images/sim.svg" alt="sim"/><div><div class="font-semibold">Living here</div><div class="text-sm text-slate-500">SIM, money, and tips.</div></div></a>
+            <a class="step-tile" href="if-something-wrong.html"><img src="images/help.svg" alt="help"/><div><div class="font-semibold">If something's wrong</div><div class="text-sm text-slate-500">Emergency contacts and help.</div></div></a>
           </div>
         </div>
 
