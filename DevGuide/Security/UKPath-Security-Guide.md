@@ -2,7 +2,7 @@
 
 ### Technical Security Controls (Engineering Work, Not Legal Sign-Off)
 
-This is separate from the [Compliance Guide](UKPath-Compliance-Guide.md): that document tracks legal/regulatory approvals a human must sign off on; this document tracks the technical controls developers implement and QA verifies. A feature can be legally compliant but still technically insecure, or vice versa — both gates must pass. See the [Documentation Index](README.md) for how all docs relate.
+This is separate from the [Compliance Guide](../Compliance/UKPath-Compliance-Guide.md): that document tracks legal/regulatory approvals a human must sign off on; this document tracks the technical controls developers implement and QA verifies. A feature can be legally compliant but still technically insecure, or vice versa — both gates must pass. See the [Documentation Index](../README.md) for how all docs relate.
 
 ---
 
@@ -16,7 +16,7 @@ This is separate from the [Compliance Guide](UKPath-Compliance-Guide.md): that d
 
 ## 2. Data Handling
 
-- [ ] No table stores DOB, passport numbers, addresses (beyond delivery use), or card numbers — enforced by schema design (see [Developer Guide §2](UKPath-Developer-Guide.md#2-core-data-model)), not just application logic
+- [ ] No table stores DOB, passport numbers, addresses (beyond delivery use), or card numbers — enforced by schema design (see [Architecture-and-API.md §2](../Dev/Architecture-and-API.md#2-core-data-model)), not just application logic
 - [ ] Raw card numbers never touch UKPath's own servers — Stripe Checkout/Elements handles this; UKPath only stores Stripe's tokenized references
 - [ ] Encrypt at rest for anything that is stored (PostgreSQL disk encryption, S3/blob server-side encryption)
 - [ ] Data deletion endpoint for user-requested account/data removal (supports UK GDPR right-to-erasure — the legal requirement lives in the Compliance Guide, the endpoint itself is this doc's concern)
@@ -31,7 +31,7 @@ This is separate from the [Compliance Guide](UKPath-Compliance-Guide.md): that d
 
 ## 4. Payments (Technical Side)
 
-The legal KYB/registration requirements live in the [Compliance Guide §4](UKPath-Compliance-Guide.md#4-payments-compliance); the technical controls are:
+The legal KYB/registration requirements live in the [Compliance Guide §4](../Compliance/UKPath-Compliance-Guide.md#4-payments-compliance); the technical controls are:
 - [ ] PCI DSS scope minimized by using Stripe Checkout/Elements (Stripe is Level 1 PCI DSS certified) — never build a custom card form that touches raw card data
 - [ ] Strong Customer Authentication (SCA) flows left intact — do not attempt to bypass or "simplify" the Stripe-provided authentication step
 - [ ] Stripe webhook signatures verified on every incoming webhook (prevents spoofed payment-confirmation events)
@@ -39,7 +39,7 @@ The legal KYB/registration requirements live in the [Compliance Guide §4](UKPat
 
 ## 5. Secrets & Configuration
 
-- [ ] No API keys, DB credentials, or Stripe secret keys committed to the repository — use environment variables, injected via the deployment pipeline (see [Deployment Guide](UKPath-Deployment-Guide.md))
+- [ ] No API keys, DB credentials, or Stripe secret keys committed to the repository — use environment variables, injected via the deployment pipeline (see [Test Environment Guide](../Test/UKPath-Test-Environment-Guide.md) and [Production Deployment Guide](../Prod/UKPath-Production-Deployment-Guide.md))
 - [ ] Separate credentials per environment (test vs. production) — a leaked test-environment key should never grant access to production data
 - [ ] Secrets rotated on a schedule and immediately if a leak is suspected
 - [ ] `.env` files are git-ignored; only `.env.example` (with placeholder values) is committed
@@ -48,7 +48,7 @@ The legal KYB/registration requirements live in the [Compliance Guide §4](UKPat
 
 - [ ] Automated dependency vulnerability scanning in CI (`npm audit` / GitHub Dependabot or equivalent) on every PR
 - [ ] Lockfiles (`package-lock.json`) committed so builds are reproducible and not silently pulling a compromised newer version
-- [ ] Docker images built from pinned base image versions (see [Deployment Guide](UKPath-Deployment-Guide.md#docker-strategy)), not `:latest`, so a build today produces the same environment as a build next month
+- [ ] Docker images built from pinned base image versions (see [Test Environment Guide](../Test/UKPath-Test-Environment-Guide.md#2-docker-strategy--two-dockerfiles-not-one)), not `:latest`, so a build today produces the same environment as a build next month
 
 ## 7. Mobile-Specific
 
@@ -59,10 +59,10 @@ The legal KYB/registration requirements live in the [Compliance Guide §4](UKPat
 ## 8. Incident Response Basics
 
 - [ ] A documented process (even a short one) for what happens if a data breach or key leak is suspected — who gets notified, how quickly, and that ICO notification timelines (legal side, Compliance Guide) are met
-- [ ] Centralized logging/monitoring (see [Deployment Guide](UKPath-Deployment-Guide.md)) so an anomaly (spike in failed auth attempts, unusual API volume) is visible before it becomes a bigger incident
+- [ ] Centralized logging/monitoring (see [Test Environment Guide](../Test/UKPath-Test-Environment-Guide.md) and [Production Deployment Guide](../Prod/UKPath-Production-Deployment-Guide.md)) so an anomaly (spike in failed auth attempts, unusual API volume) is visible before it becomes a bigger incident
 
 ---
 
 ## How This Interacts With Testing
 
-Security checks are part of the automated CI pipeline described in the [Deployment Guide](UKPath-Deployment-Guide.md#cicd-pipeline) and the platform-specific [Testing Guides](Testing/) — dependency scans and basic auth/rate-limit tests should run on every PR against the test environment, not only before launch.
+Security checks are part of the automated CI pipeline described in the [Test Environment Guide](../Test/UKPath-Test-Environment-Guide.md#3-ci-pipeline--through-test-deploy) and the platform-specific [Testing Guides](../Test/) — dependency scans and basic auth/rate-limit tests should run on every PR against the test environment, not only before launch.

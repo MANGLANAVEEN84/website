@@ -1,0 +1,91 @@
+name: CI — build, scan, push, deploy to TEST
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    name: Build, scan and push images
+    runs-on: ubuntu-latest
+    outputs:
+      web_image: ${{ steps.set-outputs.outputs.web_image }}
+      api_image: ${{ steps.set-outputs.outputs.api_image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push web image
+        id: web_build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/ukpath-web:sha-${{ github.sha }}
+
+      - name: Build & push api image
+        id: api_build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/ukpath-api:sha-${{ github.sha }}
+
+      - name: Set output image refs
+        id: set-outputs
+        run: |
+          echo "web_image=ghcr.io/${GITHUB_REPOSITORY_OWNER}/ukpath-web:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "api_image=ghcr.io/${GITHUB_REPOSITORY_OWNER}/ukpath-api:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Scan web image with Trivy
+        uses: aquasecurity/trivy-action@v1
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/ukpath-web:sha-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+        continue-on-error: true
+
+      - name: Scan api image with Trivy
+        uses: aquasecurity/trivy-action@v1
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/ukpath-api:sha-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+        continue-on-error: true
+
+  deploy-test:
+    name: Deploy to TEST (optional)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: ${{ github.ref == 'refs/heads/main' && secrets.TEST_SSH_PRIVATE_KEY != '' }}
+    steps:
+      - name: Deploy to TEST server via SSH
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.TEST_HOST }}
+          username: ${{ secrets.TEST_USER }}
+          key: ${{ secrets.TEST_SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository_owner }}/ukpath-web:sha-${{ github.sha }} || true
+            docker pull ghcr.io/${{ github.repository_owner }}/ukpath-api:sha-${{ github.sha }} || true
+            # adapt the following deploy commands to your TEST host layout
+            if [ -f /opt/ukpath/docker-compose.yml ]; then
+              docker compose -f /opt/ukpath/docker-compose.yml pull || true
+              docker compose -f /opt/ukpath/docker-compose.yml up -d || true
+            fi
