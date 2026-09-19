@@ -2,9 +2,9 @@
 
 ### Legal, Regulatory & Sign-Off Requirements — Separate from, but Gating, the Developer Build
 
-This guide runs **side by side** with the [Developer Guide](UKPath-Developer-Guide.md), not before or after it. Developers can build every module in parallel with this checklist being worked through by the founder/business side and legal counsel. The two workstreams meet at one place: **a feature must not go live in production until its compliance items here are actually approved by a human with real authority — never defaulted to true by a developer.**
+This guide runs **side by side** with the [Developer Guide](../Dev/README.md), not before or after it. Developers can build every module in parallel with this checklist being worked through by the founder/business side and legal counsel. The two workstreams meet at one place: **a feature must not go live in production until its compliance items here are actually approved by a human with real authority — never defaulted to true by a developer.**
 
-See the [Documentation Index](README.md) for how this fits with the other docs.
+See the [Documentation Index](../README.md) for how this fits with the other docs.
 
 ---
 
@@ -158,4 +158,4 @@ app.post('/grocery-checkout', async (req, res) => {
 
 ## How This Interacts With Testing
 
-The [Testing Guides](Testing/) run against a **test environment** (see [Deployment Guide](UKPath-Deployment-Guide.md#environments)) where `compliance_approvals` rows can be seeded to `true` for QA purposes only, so testers aren't blocked by real-world registrations that haven't happened yet. **This seed data must never exist in the production database or production deploy pipeline** — the Deployment Guide's promotion process explicitly excludes this table's data from any test→production sync.
+The [Testing Guides](../Test/) run against a **test environment** (see [Test Environment Guide §1](../Test/UKPath-Test-Environment-Guide.md#1-the-test-environment)) where `compliance_approvals` rows can be seeded to `true` for QA purposes only, so testers aren't blocked by real-world registrations that haven't happened yet. **This seed data must never exist in the production database or production deploy pipeline** — the [Production Deployment Guide's](../Prod/UKPath-Production-Deployment-Guide.md#2-promotion-path--test--production-only) promotion process explicitly excludes this table's data from any test→production sync.

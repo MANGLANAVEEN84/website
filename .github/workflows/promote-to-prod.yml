@@ -1,0 +1,33 @@
+name: Promote — manual promote to PROD
+
+on:
+  workflow_dispatch:
+    inputs:
+      web_image:
+        description: 'Web image tag to promote (ghcr.io/...:tag)'
+        required: true
+      api_image:
+        description: 'API image tag to promote (ghcr.io/...:tag)'
+        required: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to PROD via SSH
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ${{ github.event.inputs.web_image }} || true
+            docker pull ${{ github.event.inputs.api_image }} || true
+            # update prod compose and restart
+            if [ -f /opt/ukpath/docker-compose.yml ]; then
+              # replace image references in prod compose
+              sed -i "s|ghcr.io/.*/ukpath-web:.*|${{ github.event.inputs.web_image }}|" /opt/ukpath/docker-compose.yml || true
+              sed -i "s|ghcr.io/.*/ukpath-api:.*|${{ github.event.inputs.api_image }}|" /opt/ukpath/docker-compose.yml || true
+              docker compose -f /opt/ukpath/docker-compose.yml pull || true
+              docker compose -f /opt/ukpath/docker-compose.yml up -d || true
+            fi

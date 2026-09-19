@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UKPath — Landing (Client-side demo)</title>
+  <style>
+    :root{--bg:#081024;--card:#0f1724;--muted:#9aa4b2;--accent:#06b6d4}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;background:var(--bg);color:#e6eef6}
+    header{padding:18px 24px;display:flex;align-items:center;gap:18px}
+    .logo{font-weight:700;font-size:18px}
+    .container{display:grid;grid-template-columns:360px 1fr;gap:20px;padding:20px}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:16px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:var(--accent);color:#042029;border:none;cursor:pointer}
+    .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px}
+    .card h4{margin:0 0 4px 0}
+    .meta{font-size:13px;color:var(--muted)}
+    .large{font-size:20px;font-weight:700}
+    .controls-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .bg-stage{position:fixed;inset:0;z-index:0;overflow:hidden;opacity:0.12;pointer-events:none}
+    .bg-stage img{width:100%;height:100%;object-fit:cover}
+    main{position:relative;z-index:10}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="bg-stage" id="bgStage">
+    <img id="bgImg" src="images/india.svg" alt="background"/>
+  </div>
+  <header>
+    <div class="logo">UKPath — Demo</div>
+    <div style="margin-left:auto" class="pill">Client-only preview</div>
+  </header>
+
+  <main class="container">
+    <aside>
+      <div class="panel">
+        <div style="font-weight:700;margin-bottom:8px">Plan your trip</div>
+        <div>
+          <label>From</label>
+          <select id="inputFrom">
+            <option>India (DEL)</option>
+            <option>India (BOM)</option>
+            <option>India (HYD)</option>
+          </select>
+        </div>
+        <div style="margin-top:10px">
+          <label>To</label>
+          <select id="inputTo">
+            <option>London (LHR)</option>
+            <option>London (LGW)</option>
+            <option>Manchester (MAN)</option>
+          </select>
+        </div>
+        <div style="margin-top:10px">
+          <label>Departure</label>
+          <input id="inputDate" type="date" />
+        </div>
+        <div style="margin-top:10px">
+          <label>Passengers</label>
+          <input id="inputPax" type="number" min="1" value="1" />
+        </div>
+
+        <div class="controls-row">
+          <button class="btn" id="btnSearch">Search flights</button>
+          <button class="btn" id="btnToggleBg" style="background:#fff;color:#042029">Toggle BG</button>
+        </div>
+
+        <div class="note">No backend required — results are mocked client-side so you can test look & feel.</div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:18px;font-weight:700">Available flights</div>
+            <div class="meta" id="searchMeta">Choose options and click <strong>Search flights</strong>.</div>
+          </div>
+          <div class="pill" id="summaryPill">Ready</div>
+        </div>
+
+        <div style="margin-top:12px" id="resultsArea">
+          <div class="meta">No results yet — try a search.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const bgImg = document.getElementById('bgImg');
+    const btnToggleBg = document.getElementById('btnToggleBg');
+    const btnSearch = document.getElementById('btnSearch');
+    const resultsArea = document.getElementById('resultsArea');
+    const summaryPill = document.getElementById('summaryPill');
+    const searchMeta = document.getElementById('searchMeta');
+
+    let bgState = 0; // 0=india,1=london
+
+    btnToggleBg.addEventListener('click', ()=>{
+      bgState = 1 - bgState;
+      bgImg.src = bgState ? 'images/london.svg' : 'images/india.svg';
+    });
+
+    function mockSearch(opts){
+      // create 3 mock flights with simple variation
+      const base = Date.now();
+      const flights = [0,1,2].map(i=>{
+        const depart = new Date(base + (i+1)*3600*1000*6);
+        const arrive = new Date(depart.getTime() + (8+i)*3600*1000);
+        return {
+          id: 'FL'+(1000+i),
+          from: opts.from,
+          to: opts.to,
+          depart: depart.toLocaleString(),
+          arrive: arrive.toLocaleString(),
+          duration: (8+i)+ 'h ' + (i*15) + 'm',
+          price: 200 + i*120 + (opts.pax-1)*50
+        }
+      });
+      return flights;
+    }
+
+    function renderResults(list){
+      if(!list || list.length===0){ resultsArea.innerHTML = '<div class="meta">No flights found</div>'; return }
+      summaryPill.textContent = list.length + ' results';
+      searchMeta.textContent = 'Showing mock results — interactive only.';
+      const html = ['<div class="results">'];
+      for(const f of list){
+        html.push(`<div class="card">`);
+        html.push(`<div style="display:flex;justify-content:space-between;align-items:center"><div><h4>${f.from} → ${f.to}</h4><div class="meta">${f.depart} — ${f.arrive}</div></div><div style="text-align:right"><div class="large">£${f.price}</div><div class="meta">${f.duration}</div></div></div>`);
+        html.push(`<div style="margin-top:10px;display:flex;gap:8px"><button class="btn" data-id="${f.id}" onclick="preview('${f.id}')">Preview</button><button class="btn" style="background:#0b1220;color:var(--accent)" onclick="bookmark('${f.id}')">Bookmark</button></div>`);
+        html.push('</div>');
+      }
+      html.push('</div>');
+      resultsArea.innerHTML = html.join('');
+      // expose current list for preview
+      window.__mockResults = list;
+    }
+
+    window.preview = function(id){
+      const f = (window.__mockResults||[]).find(x=>x.id===id);
+      if(!f) return alert('Not found');
+      alert(`Preview:\n${f.from} → ${f.to}\nDepart: ${f.depart}\nArrive: ${f.arrive}\nDuration: ${f.duration}\nPrice: £${f.price}\n\nNote: this is a client-side mock.`);
+    }
+    window.bookmark = function(id){
+      const fav = localStorage.getItem('ukpath.favs') || '[]';
+      const arr = JSON.parse(fav);
+      if(arr.includes(id)) return alert('Already bookmarked');
+      arr.push(id); localStorage.setItem('ukpath.favs', JSON.stringify(arr)); alert('Bookmarked (local only)');
+    }
+
+    btnSearch.addEventListener('click', ()=>{
+      const opts = {
+        from: document.getElementById('inputFrom').value,
+        to: document.getElementById('inputTo').value,
+        date: document.getElementById('inputDate').value || 'any',
+        pax: Number(document.getElementById('inputPax').value || 1)
+      };
+      const results = mockSearch(opts);
+      renderResults(results);
+      // small UX: switch background to london after search
+      bgState = 1; bgImg.src = 'images/london.svg';
+    });
+
+    // small demo: show test-page animation link in-page
+    const link = document.createElement('div');
+    link.className = 'note';
+    link.innerHTML = 'Preview animation: <a href="test-page.html" style="color:var(--accent)">test-page.html</a>';
+    document.querySelector('aside .panel').appendChild(link);
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UKPath — Demo Site</title>
+  <style>
+    :root{--bg:#071124;--card:#0f1724;--muted:#9aa4b2;--accent:#06b6d4}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;background:linear-gradient(180deg,#071124,#041224);color:#e6eef6}
+    .wrap{max-width:1100px;margin:40px auto;padding:24px}
+    header{display:flex;align-items:center;gap:16px}
+    .brand{font-weight:800;font-size:20px}
+    .lead{color:var(--muted);margin-top:8px}
+    .hero{display:flex;gap:24px;align-items:center;margin-top:28px}
+    .hero-left{flex:0 0 480px}
+    .hero-right{flex:1}
+    .card{background:rgba(255,255,255,0.02);padding:18px;border-radius:12px}
+    .btn{display:inline-block;padding:12px 16px;border-radius:10px;background:var(--accent);color:#012; text-decoration:none;font-weight:700}
+    .muted{color:var(--muted)}
+    nav{margin-top:18px;display:flex;gap:10px}
+    footer{margin-top:38px;color:var(--muted);font-size:13px}
+    .features{display:flex;gap:12px;margin-top:14px}
+    .feature{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;flex:1}
+    a.small{color:var(--accent);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">UKPath</div>
+      <div style="margin-left:auto" class="muted">Client-only demo — dev/resume-quickstart</div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="hero-left">
+          <div class="card">
+            <h1 style="margin:0">Preview the UKPath UX</h1>
+            <div class="lead">Interactive client-side demos so designers and PMs can feel the product without backend wiring.</div>
+            <nav>
+              <a class="btn" href="first-page.html">Open interactive landing</a>
+              <a class="btn" href="test-page.html" style="background:#fff;color:#012">Open flight animation</a>
+            </nav>
+
+            <div class="features">
+              <div class="feature"><strong>Mock data</strong><div class="muted">Flights and results are generated in the browser.</div></div>
+              <div class="feature"><strong>Local-only</strong><div class="muted">No server or API required to preview UI.</div></div>
+            </div>
+
+            <div style="margin-top:12px" class="muted">Tip: Use the <code>first-page.html</code> to test flows, and <code>test-page.html</code> for full-screen animation preview.</div>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="card">
+            <h3 style="margin:0 0 8px 0">Quick actions</h3>
+            <ul class="muted">
+              <li>Preview landing: <a class="small" href="first-page.html">first-page.html</a></li>
+              <li>Preview animation: <a class="small" href="test-page.html">test-page.html</a></li>
+              <li>View assets: <a class="small" href="images/">/images/</a></li>
+            </ul>
+            <div style="margin-top:12px">
+              <a class="btn" href="first-page.html">Try it now</a>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="card muted">
+            <strong>Resume tips</strong>
+            <div style="margin-top:6px">When you return: run <code>./infra/scripts/setup_dev.sh</code> then start this static server and open this page.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      Local preview available at <strong>/</strong> — this index replaces the directory listing.
+    </footer>
+  </div>
+</body>
+</html>
